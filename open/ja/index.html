@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ja" data-lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ジャラク</title>
+<meta name="description" content="ひとすじの文">
+<!-- 메신저(카카오톡, iMessage 등)의 링크 미리보기가 읽는 정보입니다. 문서마다 달라질 수는 없어서(정적 페이지) 앱 소개를 보여 줍니다. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ジャラク">
+<meta property="og:title" content="ジャラク">
+<meta property="og:description" content="ひとすじの文">
+<meta property="og:url" content="https://geobuffer.github.io/open/ja/">
+<meta property="og:image" content="https://geobuffer.github.io/open/icon.png">
+<meta property="og:image:width" content="1024">
+<meta property="og:image:height" content="1024">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/open/icon.png">
+<link rel="apple-touch-icon" href="/open/icon.png">
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 17px/1.6 -apple-system, "Helvetica Neue", sans-serif; margin: 0; padding: 40px 24px; display: flex; justify-content: center; }
+  main { max-width: 480px; width: 100%; }
+  h1 { font-size: 15px; font-weight: 600; letter-spacing: .04em; color: #8a8a8e; margin: 0 0 28px; }
+  .title { font-size: 24px; line-height: 1.35; font-weight: 600; margin: 0 0 6px; word-break: break-word; }
+  .site { color: #8a8a8e; font-size: 15px; margin: 0 0 32px; }
+  a.button { display: block; text-align: center; text-decoration: none; padding: 14px 16px; border-radius: 12px; margin: 0 0 12px; font-weight: 600; }
+  a.primary { background: #0a84ff; color: #fff; }
+  a.secondary { background: rgba(120,120,128,.16); color: inherit; }
+  .note { color: #8a8a8e; font-size: 14px; margin-top: 28px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>ジャラク</h1>
+  <p class="title" id="title"></p>
+  <p class="site" id="site"></p>
+  <a class="button primary" id="store" hidden></a>
+  <a class="button secondary" id="original" hidden></a>
+  <p class="note" id="note"></p>
+</main>
+<script>
+// 이 페이지는 자락 앱이 없는 기기에서만 보입니다(앱이 있으면 링크를 누르는 순간 앱이 열립니다).
+// 주소: /open/?s=언어코드&t=문서제목
+(function () {
+  // App Store에 등록된 자락의 숫자 ID입니다(App Store Connect의 Apple ID).
+  var APP_STORE_ID = "6827843125";
+  // App Store에 출시되면 true로 바꿉니다. 출시 전에는 apps.apple.com 링크와 Safari 앱 배너가 열리지 않아서 숨기고, 아래 TestFlight 링크가 있으면 그것을 보여 줍니다.
+  var RELEASED = false;
+  // 출시 전(TestFlight 단계)에 쓸 공개 링크입니다(예: "https://testflight.apple.com/join/XXXXXXXX"). App Store ID가 있으면 그쪽이 우선합니다.
+  var TESTFLIGHT_URL = "";
+
+  var texts = {
+    ko: { store: "App Store에서 자락 받기", beta: "TestFlight로 자락 받기", original: "원문 보기", note: "자락은 글 한 자락을 읽는 앱입니다. 앱을 설치한 뒤 이 링크를 다시 누르면 문서가 바로 열립니다.", missing: "열 수 있는 문서 주소가 아닙니다." },
+    ja: { store: "App Store でジャラクを入手", beta: "TestFlight でジャラクを入手", original: "原文を見る", note: "ジャラクはひとすじの文を読むアプリです。インストール後にこのリンクをもう一度タップすると、文書がそのまま開きます。", missing: "開ける文書のアドレスではありません。" },
+    en: { store: "Get Jarak on the App Store", beta: "Get Jarak on TestFlight", original: "View the original", note: "Jarak is an app for reading. After installing it, tap this link again to open the document.", missing: "This isn't a document link." }
+  };
+  // /open/ko/, /open/ja/, /open/en/ 페이지는 링크를 보낸 사람의 앱 언어로 고정되어 있고(data-lang), /open/ 은 보는 기기의 언어를 따릅니다.
+  var fixed = document.documentElement.getAttribute("data-lang");
+  var lang = fixed || (navigator.language || "en").slice(0, 2);
+  var t = texts[lang] || texts.en;
+  document.documentElement.lang = texts[lang] ? lang : "en";
+
+  var params = new URLSearchParams(location.search);
+  var site = (params.get("s") || "").toLowerCase();
+  var title = (params.get("t") || "").trim();
+  var valid = /^[a-z]{2,3}$/.test(site) && title.length > 0;
+
+  var titleEl = document.getElementById("title");
+  var siteEl = document.getElementById("site");
+  var noteEl = document.getElementById("note");
+  noteEl.textContent = t.note;
+
+  if (valid) {
+    titleEl.textContent = title;
+    // 원문 주소: 호스트는 언어 코드로만 만듭니다(임의의 주소로 보내지 않습니다).
+    var path = encodeURIComponent(title.replace(/ /g, "_")).replace(/%2F/g, "/");
+    var original = document.getElementById("original");
+    original.href = "https://" + site + ".wikisource.org/wiki/" + path;
+    original.textContent = t.original;
+    original.hidden = false;
+  } else {
+    titleEl.textContent = t.missing;
+  }
+
+  var onStore = RELEASED && /^\d+$/.test(APP_STORE_ID);
+  if (!onStore && /^https:\/\/testflight\.apple\.com\/join\/[A-Za-z0-9]+$/.test(TESTFLIGHT_URL)) {
+    var beta = document.getElementById("store");
+    beta.href = TESTFLIGHT_URL;
+    beta.textContent = t.beta;
+    beta.hidden = false;
+  }
+
+  if (onStore) {
+    var store = document.getElementById("store");
+    store.href = "https://apps.apple.com/app/id" + APP_STORE_ID;
+    store.textContent = t.store;
+    store.hidden = false;
+    // Safari 상단의 앱 배너: 앱이 없으면 받기, 있으면 열기 단추가 됩니다.
+    var meta = document.createElement("meta");
+    meta.name = "apple-itunes-app";
+    meta.content = "app-id=" + APP_STORE_ID;
+    document.head.appendChild(meta);
+  }
+})();
+</script>
+</body>
+</html>

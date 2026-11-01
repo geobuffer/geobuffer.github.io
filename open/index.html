@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>자락 · Jarak</title>
-<meta name="description" content="위키문헌의 글을 한 자락씩 읽는 앱">
+<meta name="description" content="글 한 자락 · a jarak of writing">
 <!-- 메신저(카카오톡, iMessage 등)의 링크 미리보기가 읽는 정보입니다. 문서마다 달라질 수는 없어서(정적 페이지) 앱 소개를 보여 줍니다. -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="자락 · Jarak">
 <meta property="og:title" content="자락 · Jarak">
-<meta property="og:description" content="위키문헌의 글을 한 자락씩 읽는 앱">
+<meta property="og:description" content="글 한 자락 · a jarak of writing">
 <meta property="og:url" content="https://geobuffer.github.io/open/">
 <meta property="og:image" content="https://geobuffer.github.io/open/icon.png">
 <meta property="og:image:width" content="1024">
 <meta property="og:image:height" content="1024">
 <meta name="twitter:card" content="summary">
-<link rel="icon" href="icon.png">
-<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="/open/icon.png">
+<link rel="apple-touch-icon" href="/open/icon.png">
 <style>
   :root { color-scheme: light dark; }
   body { font: 17px/1.6 -apple-system, "Helvetica Neue", sans-serif; margin: 0; padding: 40px 24px; display: flex; justify-content: center; }
@@ -51,11 +51,13 @@
   var TESTFLIGHT_URL = "";
 
   var texts = {
-    ko: { store: "App Store에서 자락 받기", beta: "TestFlight로 자락 받기", original: "위키문헌에서 원문 보기", note: "자락은 위키문헌의 글을 읽는 앱입니다. 앱을 설치한 뒤 이 링크를 다시 누르면 문서가 바로 열립니다.", wiki: "위키문헌", missing: "열 수 있는 문서 주소가 아닙니다." },
-    ja: { store: "App Store でジャラクを入手", beta: "TestFlight でジャラクを入手", original: "ウィキソースで原文を見る", note: "ジャラクはウィキソースの文章を読むアプリです。インストール後にこのリンクをもう一度タップすると、文書がそのまま開きます。", wiki: "ウィキソース", missing: "開ける文書のアドレスではありません。" },
-    en: { store: "Get Jarak on the App Store", beta: "Get Jarak on TestFlight", original: "View the original on Wikisource", note: "Jarak is an app for reading Wikisource. After installing it, tap this link again to open the document.", wiki: "Wikisource", missing: "This isn't a document link." }
+    ko: { store: "App Store에서 자락 받기", beta: "TestFlight로 자락 받기", original: "원문 보기", note: "자락은 글 한 자락을 읽는 앱입니다. 앱을 설치한 뒤 이 링크를 다시 누르면 문서가 바로 열립니다.", missing: "열 수 있는 문서 주소가 아닙니다." },
+    ja: { store: "App Store でジャラクを入手", beta: "TestFlight でジャラクを入手", original: "原文を見る", note: "ジャラクはひとすじの文を読むアプリです。インストール後にこのリンクをもう一度タップすると、文書がそのまま開きます。", missing: "開ける文書のアドレスではありません。" },
+    en: { store: "Get Jarak on the App Store", beta: "Get Jarak on TestFlight", original: "View the original", note: "Jarak is an app for reading. After installing it, tap this link again to open the document.", missing: "This isn't a document link." }
   };
-  var lang = (navigator.language || "en").slice(0, 2);
+  // /open/ko/, /open/ja/, /open/en/ 페이지는 링크를 보낸 사람의 앱 언어로 고정되어 있고(data-lang), /open/ 은 보는 기기의 언어를 따릅니다.
+  var fixed = document.documentElement.getAttribute("data-lang");
+  var lang = fixed || (navigator.language || "en").slice(0, 2);
   var t = texts[lang] || texts.en;
   document.documentElement.lang = texts[lang] ? lang : "en";
 
@@ -71,7 +73,6 @@
 
   if (valid) {
     titleEl.textContent = title;
-    siteEl.textContent = site + ".wikisource.org · " + t.wiki;
     // 원문 주소: 호스트는 언어 코드로만 만듭니다(임의의 주소로 보내지 않습니다).
     var path = encodeURIComponent(title.replace(/ /g, "_")).replace(/%2F/g, "/");
     var original = document.getElementById("original");
