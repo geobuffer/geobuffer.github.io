@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>자락 · Jarak</title>
+<meta property="og:title" content="자락 · Jarak">
+<meta property="og:description" content="위키문헌의 글을 한 자락씩 읽는 앱 / A reader for Wikisource / ウィキソースを読むアプリ">
+<meta name="robots" content="noindex">
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 17px/1.6 -apple-system, "Helvetica Neue", sans-serif; margin: 0; padding: 40px 24px; display: flex; justify-content: center; }
+  main { max-width: 480px; width: 100%; }
+  h1 { font-size: 15px; font-weight: 600; letter-spacing: .04em; color: #8a8a8e; margin: 0 0 28px; }
+  .title { font-size: 24px; line-height: 1.35; font-weight: 600; margin: 0 0 6px; word-break: break-word; }
+  .site { color: #8a8a8e; font-size: 15px; margin: 0 0 32px; }
+  a.button { display: block; text-align: center; text-decoration: none; padding: 14px 16px; border-radius: 12px; margin: 0 0 12px; font-weight: 600; }
+  a.primary { background: #0a84ff; color: #fff; }
+  a.secondary { background: rgba(120,120,128,.16); color: inherit; }
+  .note { color: #8a8a8e; font-size: 14px; margin-top: 28px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>자락 · Jarak</h1>
+  <p class="title" id="title"></p>
+  <p class="site" id="site"></p>
+  <a class="button primary" id="store" hidden></a>
+  <a class="button secondary" id="original" hidden></a>
+  <p class="note" id="note"></p>
+</main>
+<script>
+// 이 페이지는 자락 앱이 없는 기기에서만 보입니다(앱이 있으면 링크를 누르는 순간 앱이 열립니다).
+// 주소: /open/?s=언어코드&t=문서제목
+(function () {
+  // App Store에 등록된 자락의 숫자 ID입니다(예: "1234567890"). 비워 두면 App Store 단추와 상단 배너를 숨깁니다.
+  var APP_STORE_ID = "";
+
+  var texts = {
+    ko: { store: "App Store에서 자락 받기", original: "위키문헌에서 원문 보기", note: "자락은 위키문헌의 글을 읽는 앱입니다. 앱을 설치한 뒤 이 링크를 다시 누르면 문서가 바로 열립니다.", wiki: "위키문헌", missing: "열 수 있는 문서 주소가 아닙니다." },
+    ja: { store: "App Store でジャラクを入手", original: "ウィキソースで原文を見る", note: "ジャラクはウィキソースの文章を読むアプリです。インストール後にこのリンクをもう一度タップすると、文書がそのまま開きます。", wiki: "ウィキソース", missing: "開ける文書のアドレスではありません。" },
+    en: { store: "Get Jarak on the App Store", original: "View the original on Wikisource", note: "Jarak is an app for reading Wikisource. After installing it, tap this link again to open the document.", wiki: "Wikisource", missing: "This isn't a document link." }
+  };
+  var lang = (navigator.language || "en").slice(0, 2);
+  var t = texts[lang] || texts.en;
+  document.documentElement.lang = texts[lang] ? lang : "en";
+
+  var params = new URLSearchParams(location.search);
+  var site = (params.get("s") || "").toLowerCase();
+  var title = (params.get("t") || "").trim();
+  var valid = /^[a-z]{2,3}$/.test(site) && title.length > 0;
+
+  var titleEl = document.getElementById("title");
+  var siteEl = document.getElementById("site");
+  var noteEl = document.getElementById("note");
+  noteEl.textContent = t.note;
+
+  if (valid) {
+    titleEl.textContent = title;
+    siteEl.textContent = site + ".wikisource.org · " + t.wiki;
+    // 원문 주소: 호스트는 언어 코드로만 만듭니다(임의의 주소로 보내지 않습니다).
+    var path = encodeURIComponent(title.replace(/ /g, "_")).replace(/%2F/g, "/");
+    var original = document.getElementById("original");
+    original.href = "https://" + site + ".wikisource.org/wiki/" + path;
+    original.textContent = t.original;
+    original.hidden = false;
+  } else {
+    titleEl.textContent = t.missing;
+  }
+
+  if (/^\d+$/.test(APP_STORE_ID)) {
+    var store = document.getElementById("store");
+    store.href = "https://apps.apple.com/app/id" + APP_STORE_ID;
+    store.textContent = t.store;
+    store.hidden = false;
+    // Safari 상단의 앱 배너: 앱이 없으면 받기, 있으면 열기 단추가 됩니다.
+    var meta = document.createElement("meta");
+    meta.name = "apple-itunes-app";
+    meta.content = "app-id=" + APP_STORE_ID;
+    document.head.appendChild(meta);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "GAGNMTRSX7.com.gbuffer.Jarak",
+          "GAGNMTRSX7.com.gbuffer.Jarak.dev"
+        ],
+        "components": [
+          { "/": "/open/*", "comment": "자락 앱이 여는 문서 링크: /open/?s=언어코드&t=문서제목" }
+        ]
+      }
+    ]
+  }
+}
