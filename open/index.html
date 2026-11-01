@@ -33,8 +33,10 @@
 // 이 페이지는 자락 앱이 없는 기기에서만 보입니다(앱이 있으면 링크를 누르는 순간 앱이 열립니다).
 // 주소: /open/?s=언어코드&t=문서제목
 (function () {
-  // App Store에 등록된 자락의 숫자 ID입니다(예: "1234567890"). 비워 두면 App Store 단추와 상단 배너를 숨깁니다.
-  var APP_STORE_ID = "";
+  // App Store에 등록된 자락의 숫자 ID입니다(App Store Connect의 Apple ID).
+  var APP_STORE_ID = "6827843125";
+  // App Store에 출시되면 true로 바꿉니다. 출시 전에는 apps.apple.com 링크와 Safari 앱 배너가 열리지 않아서 숨기고, 아래 TestFlight 링크가 있으면 그것을 보여 줍니다.
+  var RELEASED = false;
   // 출시 전(TestFlight 단계)에 쓸 공개 링크입니다(예: "https://testflight.apple.com/join/XXXXXXXX"). App Store ID가 있으면 그쪽이 우선합니다.
   var TESTFLIGHT_URL = "";
 
@@ -70,14 +72,15 @@
     titleEl.textContent = t.missing;
   }
 
-  if (!/^\d+$/.test(APP_STORE_ID) && /^https:\/\/testflight\.apple\.com\/join\/[A-Za-z0-9]+$/.test(TESTFLIGHT_URL)) {
+  var onStore = RELEASED && /^\d+$/.test(APP_STORE_ID);
+  if (!onStore && /^https:\/\/testflight\.apple\.com\/join\/[A-Za-z0-9]+$/.test(TESTFLIGHT_URL)) {
     var beta = document.getElementById("store");
     beta.href = TESTFLIGHT_URL;
     beta.textContent = t.beta;
     beta.hidden = false;
   }
 
-  if (/^\d+$/.test(APP_STORE_ID)) {
+  if (onStore) {
     var store = document.getElementById("store");
     store.href = "https://apps.apple.com/app/id" + APP_STORE_ID;
     store.textContent = t.store;
