@@ -35,6 +35,8 @@
   <h1>자락</h1>
   <p class="title" id="title"></p>
   <p class="site" id="site"></p>
+  <a class="button primary" id="open" hidden></a>
+  <a class="button secondary" id="external" hidden></a>
   <a class="button primary" id="store" hidden></a>
   <a class="button secondary" id="original" hidden></a>
   <p class="note" id="note"></p>
@@ -51,9 +53,9 @@
   var TESTFLIGHT_URL = "";
 
   var texts = {
-    ko: { store: "App Store에서 자락 받기", beta: "TestFlight로 자락 받기", original: "원문 보기", note: "자락은 글 한 자락을 읽는 앱입니다. 앱을 설치한 뒤 이 링크를 다시 누르면 문서가 바로 열립니다.", missing: "열 수 있는 문서 주소가 아닙니다." },
-    ja: { store: "App Store でジャラクを入手", beta: "TestFlight でジャラクを入手", original: "原文を見る", note: "ジャラクはひとすじの文を読むアプリです。インストール後にこのリンクをもう一度タップすると、文書がそのまま開きます。", missing: "開ける文書のアドレスではありません。" },
-    en: { store: "Get Jarak on the App Store", beta: "Get Jarak on TestFlight", original: "View the original", note: "Jarak is an app for reading. After installing it, tap this link again to open the document.", missing: "This isn't a document link." }
+    ko: { open: "앱에서 열기", external: "Safari에서 열기", store: "App Store에서 자락 받기", beta: "TestFlight로 자락 받기", original: "원문 보기", note: "자락은 글 한 자락을 읽는 앱입니다. 앱을 설치한 뒤 이 링크를 다시 누르면 문서가 바로 열립니다.", missing: "열 수 있는 문서 주소가 아닙니다." },
+    ja: { open: "アプリで開く", external: "Safari で開く", store: "App Store でジャラクを入手", beta: "TestFlight でジャラクを入手", original: "原文を見る", note: "ジャラクはひとすじの文を読むアプリです。インストール後にこのリンクをもう一度タップすると、文書がそのまま開きます。", missing: "開ける文書のアドレスではありません。" },
+    en: { open: "Open in the app", external: "Open in Safari", store: "Get Jarak on the App Store", beta: "Get Jarak on TestFlight", original: "View the original", note: "Jarak is an app for reading. After installing it, tap this link again to open the document.", missing: "This isn't a document link." }
   };
   // /open/ko/, /open/ja/, /open/en/ 페이지는 링크를 보낸 사람의 앱 언어로 고정되어 있고(data-lang), /open/ 은 보는 기기의 언어를 따릅니다.
   var fixed = document.documentElement.getAttribute("data-lang");
@@ -79,9 +81,25 @@
     original.href = "https://" + site + ".wikisource.org/wiki/" + path;
     original.textContent = t.original;
     original.hidden = false;
+    // 앱에서 열기: 자락 스킴 주소입니다. 카카오톡 같은 앱 안 브라우저는 유니버설 링크를 앱에 넘기지 않지만 스킴은 넘깁니다. 앱이 없으면 열리지 않으므로 아래 받기 단추를 함께 둡니다.
+    var open = document.getElementById("open");
+    open.href = "jarak://open?s=" + encodeURIComponent(site) + "&t=" + encodeURIComponent(title);
+    open.textContent = t.open;
+    open.hidden = false;
+    // 카카오톡 앱 안 브라우저에서만: 이 페이지를 기본 브라우저(Safari)에서 엽니다.
+    if (/KAKAOTALK/i.test(navigator.userAgent)) {
+      var external = document.getElementById("external");
+      external.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href);
+      external.textContent = t.external;
+      external.hidden = false;
+    }
   } else {
     titleEl.textContent = t.missing;
   }
+
+  // 앱에서 열기 단추가 있으면 받기 단추는 보조 단추로 내립니다.
+  var storeEl = document.getElementById("store");
+  if (valid) storeEl.className = "button secondary";
 
   var onStore = RELEASED && /^\d+$/.test(APP_STORE_ID);
   if (!onStore && /^https:\/\/testflight\.apple\.com\/join\/[A-Za-z0-9]+$/.test(TESTFLIGHT_URL)) {
